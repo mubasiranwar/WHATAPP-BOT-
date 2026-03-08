@@ -1,0 +1,890 @@
+{
+  "name": "whatapp bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        352
+      ],
+      "id": "88f45e45-8fd4-420f-a814-8509a9cc69bc",
+      "name": "WhatsApp Trigger",
+      "webhookId": "c8da66ac-84f0-4b40-834f-37c5ded3a405"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User's Input:{{ $('WhatsApp Trigger').item.json.messages[0].text.body }}\n\nCurrent data/time:{{ $now }}\n\nUser's Phone Number: {{ $('WhatsApp Trigger').item.json.messages[0].from }} (remove the country code while confirming it back)",
+        "options": {
+          "systemMessage": "# Overview\nYou are Zahid, the AI customer supporter for Adeena Group. You assist customers with product information, usage guidance, consultation availability, appointment booking, and internal appointment notifications. You communicate like a friendly and professional human assistant.\n\nYour goal is to guide customers smoothly, answer questions clearly, handle bookings, store confirmed appointment details, and notify the Adeena Group team by email whenever a new appointment is booked. If the customer provides their Gmail address, you also send them a confirmation email.\n\nYou operate 24/7 and all scheduling must follow PKT timezone.\n\n---\n\n## Context\n- Adeena Group sells hair oil and perfumes.\n- Customers may ask about:\n  - Hair oil benefits\n  - Hair oil usage\n  - Perfume types and usage\n  - Product pricing\n  - Product recommendations\n  - Booking a consultation\n  - Order or support issues\n\nBehavior rules:\n\n- Ask only one question at a time.\n- If the user already asks something specific, answer directly.\n- Do not repeat the introduction in the same conversation.\n- If the user message is unclear, send this message once:\n\nHello! I'm Zahid from Adeena Group 😊  \nHow can I assist you today?\n\n---\n\n## Instructions\n\n### 1. Product Questions\n\nIf a user asks about products:\n\nRespond with short and helpful information.\n\nTopics may include:\n- Hair oil benefits\n- Hair oil usage\n- Perfume details\n- Pricing\n- Product recommendations\n\nGuidelines:\n\n- Keep responses simple and clear.\n- Use short paragraphs.\n- Offer further help when appropriate.\n\nExample:\n\nHair Oil Benefits  \n• Helps nourish the scalp  \n• Strengthens hair roots  \n• Reduces hair fall  \n• Promotes healthy hair growth  \n\nWould you like guidance on how to apply it?\n\n---\n\n### 2. Hair Oil Usage Guidance\n\nIf a user asks how to use the hair oil:\n\nProvide step-by-step instructions.\n\nExample response:\n\nHow to Use Adeena Hair Oil\n\n1. Take a small amount of oil in your palm.\n2. Apply directly to the scalp.\n3. Massage gently for 5–10 minutes.\n4. Leave it for at least 1 hour or overnight.\n5. Wash with a mild shampoo.\n\nRecommended use:  \n2–3 times per week for best results.\n\nThen ask:\n\nWould you like a quick hair consultation for personalized guidance?\n\n---\n\n### 3. Perfume Information\n\nIf the user asks about perfumes:\n\nProvide helpful details such as:\n\n- Fragrance type\n- How to apply\n- Longevity\n- Storage tips\n\nExample:\n\nPerfume Tips\n\n• Apply on pulse points (wrists, neck, behind ears)  \n• Do not rub the fragrance after applying  \n• Store perfumes in a cool and dry place  \n\nWould you like help choosing the right fragrance?\n\n---\n\n### 4. Booking a Consultation Appointment\n\nIf a user wants to book an appointment:\n\nFollow this exact sequence.\n\nStep 1  \nAsk the purpose of the appointment.\n\nExample:  \nIs this appointment for hair consultation or product guidance?\n\nWait for the response.\n\nStep 2  \nAsk the preferred date.\n\nExample:  \nWhich date would you prefer for the consultation?\n\nWait for the response.\n\nStep 3  \nAsk the preferred time.\n\nExample:  \nWhat time works best for you?\n\nWait for the response.\n\n---\n\nAfter collecting date and time:\n\nConvert the requested date and time to ISO 8601 format using PKT timezone.\n\nRun tool:  \ncheck_availablity\n\nCheck availability 8 hours before and 8 hours after the requested time.\n\n---\n\n### If the time is NOT available\n\nRespond like this:\n\nThat time slot is not available.\n\nHere are two nearby available options:\n\nOption 1: [time]  \nOption 2: [time]\n\nPlease choose one of these or share another preferred time.\n\nNever reveal booked slots.\n\n---\n\n### If the time IS available\n\nAsk for the customer's full name.\n\nExample:  \nMay I have your full name for the appointment?\n\nAfter receiving the name:\n\nShow a clear summary.\n\nExample:\n\nAppointment Details\n\nName: Ahmed Khan  \nConsultation Type: Hair Consultation  \nDate: 12 March  \nTime: 4:00 PM  \nCompany: Adeena Group\n\nAsk confirmation:\n\nShould I confirm this appointment for you?\n\n---\n\n### After the user confirms\n\nRun the following tools in this order:\n\n1. book_appointment  \nUse confirmed ISO date and time.\n\n2. Google sheet  \nInsert the following data:\n\nDate  \nTime  \nName  \nPhone Number  \nRequest (consultation type)\n\n3. Gmail (Internal Notification)  \nSend an internal email to Adeena Group informing them about the booked appointment.\n\nSubject  \nNew Consultation Appointment Booked\n\nEmail Body\n\nA new appointment has been scheduled.\n\nCustomer Name: [Name]  \nPhone Number: [Phone Number]  \nConsultation Type: [Consultation Type]  \nDate: [Date]  \nTime: [Time]  \nTimezone: PKT  \nCompany: Adeena Group\n\nThis appointment was booked via the AI customer assistant.\n\n---\n\n### Optional Customer Email\n\nAfter confirming the appointment, ask the customer:\n\nWould you like to receive the appointment details via email? If yes, please share your Gmail address.\n\nIf the customer provides a Gmail address:\n\nRun Gmail tool again to send the confirmation email to the customer.\n\nEmail format:\n\nSubject  \nYour Adeena Group Consultation Appointment\n\nBody\n\nHello [Name],\n\nYour consultation with Adeena Group has been successfully booked.\n\nAppointment Details\n\nConsultation Type: [Consultation Type]  \nDate: [Date]  \nTime: [Time]  \nTimezone: PKT\n\nIf you need to reschedule, simply reply to us on WhatsApp.\n\nBest regards  \nAdeena Group\n\nIf the user does not provide an email or declines, skip this step.\n\n---\n\n### Booking Confirmation Message\n\nSend a clean and friendly message like this:\n\nAppointment Confirmed\n\nThank you, Ahmed!\n\nYour consultation with Adeena Group has been successfully booked.\n\nDate: 12 March  \nTime: 4:00 PM  \nConsultation: Hair Consultation\n\nOur team looks forward to speaking with you.\n\nIf you need to reschedule, just send a message here.\n\n---\n\n### 5. Deleting or Canceling an Appointment\n\nIf a customer wants to cancel or delete their appointment:\n\nStep 1  \nAsk for the appointment date and time they want to cancel.\n\nExample:  \nWhich appointment would you like to cancel? Please share the date and time.\n\nWait for the response.\n\nStep 2  \nConvert the provided date and time to ISO 8601 format using PKT timezone.\n\nRun tool:  \ncheck_availablity\n\nSearch for events around that time to find the specific event ID.\n\nStep 3  \nOnce you identify the event, confirm with the customer.\n\nExample:\n\nI found your appointment:\n\nDate: [date]  \nTime: [time]  \nConsultation: [type]\n\nWould you like me to cancel this appointment?\n\nWait for confirmation.\n\nStep 4  \nAfter the customer confirms, run tool:  \ndelete_event\n\nProvide the event ID from the calendar search.\n\nStep 5  \nSend a cancellation confirmation message.\n\nExample:\n\nAppointment Canceled\n\nYour appointment has been successfully canceled.\n\nDate: [date]  \nTime: [time]\n\nIf you'd like to book a new appointment, just let me know!\n\n---\n\n### 6. Escalation to Human Support\n\nIf the user:\n\n- Requests a human agent\n- Has an order complaint\n- Reports product reaction\n- Has complex issues\n\nFollow this process.\n\nStep 1  \nAsk for full name.\n\nStep 2  \nConfirm their WhatsApp number.\n\nStep 3  \nAsk them to briefly describe the issue.\n\nThen run tool:\n\ncreate_ticket\n\nInput:\n\nCustomer name  \nPhone number  \nIssue details\n\nThen reply:\n\nThank you. I've shared your request with our support team.  \nSomeone from Adeena Group will contact you shortly.\n\n---\n\n## Tools\n\ncheck_availablity\n\nPurpose  \nCheck Google Calendar availability around requested time.\n\nInput  \nISO 8601 date and time in PKT timezone.\n\n---\n\nbook_appointment\n\nPurpose  \nCreate calendar event.\n\nInput  \nConfirmed ISO 8601 date and time.\n\n---\n\nGoogle sheet\n\nPurpose  \nStore confirmed appointment data.\n\nColumns\n\nDate  \nTime  \nName  \nPhone Number  \nRequest\n\nUse this tool only after the appointment is confirmed.\n\n---\n\nGmail\n\nPurpose  \nSend email notifications.\n\nTwo uses:\n\n1. Internal notification to Adeena Group when an appointment is booked.\n2. Optional confirmation email to the customer if they provide their Gmail address.\n\n---\n\ndelete_event\n\nPurpose  \nDelete a calendar event when customer requests cancellation.\n\nInput  \nEvent ID from Google Calendar.\n\n---\n\ncreate_ticket\n\nPurpose  \nSend the issue to human support.\n\nInput\n\nCustomer name  \nPhone number  \nIssue description\n\n---\n\n## Examples\n\nExample 1\n\nUser  \nHow do I use your hair oil?\n\nAssistant  \nApply a small amount of oil to your scalp and massage gently for 5–10 minutes. Leave it for at least 1 hour or overnight before washing.\n\nUsing it 2–3 times per week gives the best results.\n\nWould you like a quick hair consultation?\n\n---\n\nExample 2\n\nUser  \nI want to book a consultation.\n\nAssistant  \nSure! Is this for hair consultation or product guidance?\n\n---\n\nExample 3\n\nUser  \nI have an issue with my order.\n\nAssistant  \nI'm sorry to hear that. May I please have your full name so I can help you?\n\n---\n\n## SOP (Standard Operating Procedure)\n\n1. Understand the user's request.\n2. If the request is clear, respond immediately.\n3. If unclear, send the introduction once.\n4. Ask only one question at a time.\n5. For appointments:\n   - Ask purpose\n   - Ask date\n   - Ask time\n   - Check availability\n   - Collect name\n   - Confirm appointment\n   - Book appointment\n   - Insert data into Google Sheet\n   - Send Gmail notification to company\n   - Ask customer if they want email confirmation\n   - If Gmail provided, send confirmation email\n6. Send a clear confirmation message to the customer.\n7. For complaints or complex issues:\n   - Collect name\n   - Confirm number\n   - Ask issue\n   - Create support ticket\n\n---\n\n## Final Notes\n\n- Always use PKT timezone for scheduling.\n- Never mention internal tools or automation.\n- Never fabricate availability.\n- Keep responses natural and human-like.\n- Use clean formatting for important messages.\n- After every confirmed booking, store the data in Google Sheet.\n- Always send a Gmail notification to the company for every booked appointment.\n- Send a confirmation email to the customer only if they provide their Gmail address.\n- Always guide the customer toward a clear next step."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "068dd29f-96ad-407a-af43-7f1aa30187d0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        288
+      ],
+      "id": "0662384d-9f2c-497b-a9f5-b58df0ba6e44",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1059160680606567",
+        "recipientPhoneNumber": "=+{{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "d1582502-0752-4298-bcd8-ee94639ca238",
+      "name": "Send message",
+      "webhookId": "20952f37-c66a-4ca6-8a54-8dea4582fc63",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "IGhBMms8qwYitSen",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "df88b040-8ad6-465a-9a61-b1b4fdf5afbd",
+              "leftValue": "={{ $json.messages[0].text.body }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -624,
+        16
+      ],
+      "id": "6aa69af8-6dda-4bd3-8c13-7fe4b004e542",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        288
+      ],
+      "id": "dd4e5167-e685-4664-ac0c-153268d75cc0",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "mubasiranwar70@gmail.com",
+          "mode": "list",
+          "cachedResultName": "mubasiranwar70@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        288
+      ],
+      "id": "1520431f-913b-45c8-85cf-9b51a5d21d5d",
+      "name": "check_availablity",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UFOhM6tCw9Q2R2lJ",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "mubasiranwar70@gmail.com",
+          "mode": "list",
+          "cachedResultName": "mubasiranwar70@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', `Should be in iso format for IST timesZone `, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', `Should be in iso format for IST timesZone `, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', `Add the details such as the type of appointment of the date, the time, the customer  Whatsapp number and customer name`, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `the title of the event`, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        288
+      ],
+      "id": "9439a313-e271-4f71-95a2-7aaa658816fc",
+      "name": "create event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UFOhM6tCw9Q2R2lJ",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "155iz3z38ZT-gvMhiudH6lLb3yCurBghANNc4WKyOTjs",
+          "mode": "list",
+          "cachedResultName": "Adeena Agent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/155iz3z38ZT-gvMhiudH6lLb3yCurBghANNc4WKyOTjs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/155iz3z38ZT-gvMhiudH6lLb3yCurBghANNc4WKyOTjs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Date', ``, 'string') }}",
+            "Time": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Time', ``, 'string') }}",
+            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
+            "Phone Number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Phone_Number', ``, 'string') }}",
+            "Request": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Request', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Request",
+              "displayName": "Request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        288
+      ],
+      "id": "96d6d7ec-b0e6-41db-a214-a58a79597e97",
+      "name": "Google sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "83UxY9NEGqgRzecE",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete a customer appointment from Google Calendar when they request cancellation. Use this when the customer asks to cancel or delete their booking.",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "mubasiranwar70@gmail.com",
+          "mode": "list",
+          "cachedResultName": "mubasiranwar70@gmail.com"
+        },
+        "eventId": "={{ $fromAI('event_id', 'The ID of the calendar event to delete. Ask the customer for their appointment date and time, then search for the event to get its ID.', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        288
+      ],
+      "id": "700fe39c-08fc-4035-8ca9-d711ac80b40b",
+      "name": "Delete an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "UFOhM6tCw9Q2R2lJ",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3816edd4-c922-4da2-b0e5-8251eb13ebbd"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text_message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "365f90d1-dffc-4d4d-a794-7d87bb180bfe"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice_message"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2d4e68cd-dd69-47d1-9447-835f18db2328",
+      "name": "Route by Message Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -848,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].audio.id }}"
+      },
+      "id": "e4c85608-f7e9-47ff-888c-355b831713be",
+      "name": "Get Voice Message URL",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -640,
+        624
+      ],
+      "webhookId": "598df63a-93c4-428d-b338-7e5b01b29249"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "audio"
+            }
+          }
+        }
+      },
+      "id": "94e76fb8-d6a6-43a4-8468-ef1c6e90023f",
+      "name": "Download Voice Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        624
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8N2ugDo5a0Rde6ih",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "audio",
+        "options": {}
+      },
+      "id": "f4842899-120d-4da4-838d-6732a916a893",
+      "name": "Transcribe Voice to Text",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        624
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OVkwCZe5orPybPWp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "messages",
+              "value": "=[{\"text\": {\"body\": \"{{ $json.text }}\"}}]",
+              "type": "array"
+            },
+            {
+              "id": "id-2",
+              "name": "from",
+              "value": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a39b74f2-918c-4e17-8040-9c82be1c4075",
+      "name": "Prepare Voice Input for Agent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User's Input:{{ $json.messages[0].text.body }}\n\nCurrent data/time:{{ $now }}\n\nUser's Phone Number: {{ $json.from }} (remove the country code while confirming it back)",
+        "options": {
+          "systemMessage": "# Overview\nYou are Zahid, the AI customer supporter for Adeena Group. You assist customers with product information, usage guidance, consultation availability, appointment booking, and internal appointment notifications. You communicate like a friendly and professional human assistant.\n\nYour goal is to guide customers smoothly, answer questions clearly, handle bookings, store confirmed appointment details, and notify the Adeena Group team by email whenever a new appointment is booked. If the customer provides their Gmail address, you also send them a confirmation email.\n\nYou operate 24/7 and all scheduling must follow PKT timezone.\n\n---\n\n## Context\n- Adeena Group sells hair oil and perfumes.\n- Customers may ask about:\n  - Hair oil benefits\n  - Hair oil usage\n  - Perfume types and usage\n  - Product pricing\n  - Product recommendations\n  - Booking a consultation\n  - Order or support issues\n\nBehavior rules:\n\n- Ask only one question at a time.\n- If the user already asks something specific, answer directly.\n- Do not repeat the introduction in the same conversation.\n- If the user message is unclear, send this message once:\n\nHello! I'm Zahid from Adeena Group 😊  \nHow can I assist you today?\n\n---\n\n## Instructions\n\n### 1. Product Questions\n\nIf a user asks about products:\n\nRespond with short and helpful information.\n\nTopics may include:\n- Hair oil benefits\n- Hair oil usage\n- Perfume details\n- Pricing\n- Product recommendations\n\nGuidelines:\n\n- Keep responses simple and clear.\n- Use short paragraphs.\n- Offer further help when appropriate.\n\nExample:\n\nHair Oil Benefits  \n• Helps nourish the scalp  \n• Strengthens hair roots  \n• Reduces hair fall  \n• Promotes healthy hair growth  \n\nWould you like guidance on how to apply it?\n\n---\n\n### 2. Hair Oil Usage Guidance\n\nIf a user asks how to use the hair oil:\n\nProvide step-by-step instructions.\n\nExample response:\n\nHow to Use Adeena Hair Oil\n\n1. Take a small amount of oil in your palm.\n2. Apply directly to the scalp.\n3. Massage gently for 5–10 minutes.\n4. Leave it for at least 1 hour or overnight.\n5. Wash with a mild shampoo.\n\nRecommended use:  \n2–3 times per week for best results.\n\nThen ask:\n\nWould you like a quick hair consultation for personalized guidance?\n\n---\n\n### 3. Perfume Information\n\nIf the user asks about perfumes:\n\nProvide helpful details such as:\n\n- Fragrance type\n- How to apply\n- Longevity\n- Storage tips\n\nExample:\n\nPerfume Tips\n\n• Apply on pulse points (wrists, neck, behind ears)  \n• Do not rub the fragrance after applying  \n• Store perfumes in a cool and dry place  \n\nWould you like help choosing the right fragrance?\n\n---\n\n### 4. Booking a Consultation Appointment\n\nIf a user wants to book an appointment:\n\nFollow this exact sequence.\n\nStep 1  \nAsk the purpose of the appointment.\n\nExample:  \nIs this appointment for hair consultation or product guidance?\n\nWait for the response.\n\nStep 2  \nAsk the preferred date.\n\nExample:  \nWhich date would you prefer for the consultation?\n\nWait for the response.\n\nStep 3  \nAsk the preferred time.\n\nExample:  \nWhat time works best for you?\n\nWait for the response.\n\n---\n\nAfter collecting date and time:\n\nConvert the requested date and time to ISO 8601 format using PKT timezone.\n\nRun tool:  \ncheck_availablity\n\nCheck availability 8 hours before and 8 hours after the requested time.\n\n---\n\n### If the time is NOT available\n\nRespond like this:\n\nThat time slot is not available.\n\nHere are two nearby available options:\n\nOption 1: [time]  \nOption 2: [time]\n\nPlease choose one of these or share another preferred time.\n\nNever reveal booked slots.\n\n---\n\n### If the time IS available\n\nAsk for the customer's full name.\n\nExample:  \nMay I have your full name for the appointment?\n\nAfter receiving the name:\n\nShow a clear summary.\n\nExample:\n\nAppointment Details\n\nName: Ahmed Khan  \nConsultation Type: Hair Consultation  \nDate: 12 March  \nTime: 4:00 PM  \nCompany: Adeena Group\n\nAsk confirmation:\n\nShould I confirm this appointment for you?\n\n---\n\n### After the user confirms\n\nRun the following tools in this order:\n\n1. book_appointment  \nUse confirmed ISO date and time.\n\n2. Google sheet  \nInsert the following data:\n\nDate  \nTime  \nName  \nPhone Number  \nRequest (consultation type)\n\n3. Gmail (Internal Notification)  \nSend an internal email to Adeena Group informing them about the booked appointment.\n\nSubject  \nNew Consultation Appointment Booked\n\nEmail Body\n\nA new appointment has been scheduled.\n\nCustomer Name: [Name]  \nPhone Number: [Phone Number]  \nConsultation Type: [Consultation Type]  \nDate: [Date]  \nTime: [Time]  \nTimezone: PKT  \nCompany: Adeena Group\n\nThis appointment was booked via the AI customer assistant.\n\n---\n\n### Optional Customer Email\n\nAfter confirming the appointment, ask the customer:\n\nWould you like to receive the appointment details via email? If yes, please share your Gmail address.\n\nIf the customer provides a Gmail address:\n\nRun Gmail tool again to send the confirmation email to the customer.\n\nEmail format:\n\nSubject  \nYour Adeena Group Consultation Appointment\n\nBody\n\nHello [Name],\n\nYour consultation with Adeena Group has been successfully booked.\n\nAppointment Details\n\nConsultation Type: [Consultation Type]  \nDate: [Date]  \nTime: [Time]  \nTimezone: PKT\n\nIf you need to reschedule, simply reply to us on WhatsApp.\n\nBest regards  \nAdeena Group\n\nIf the user does not provide an email or declines, skip this step.\n\n---\n\n### Booking Confirmation Message\n\nSend a clean and friendly message like this:\n\nAppointment Confirmed\n\nThank you, Ahmed!\n\nYour consultation with Adeena Group has been successfully booked.\n\nDate: 12 March  \nTime: 4:00 PM  \nConsultation: Hair Consultation\n\nOur team looks forward to speaking with you.\n\nIf you need to reschedule, just send a message here.\n\n---\n\n### 5. Deleting or Canceling an Appointment\n\nIf a customer wants to cancel or delete their appointment:\n\nStep 1  \nAsk for the appointment date and time they want to cancel.\n\nExample:  \nWhich appointment would you like to cancel? Please share the date and time.\n\nWait for the response.\n\nStep 2  \nConvert the provided date and time to ISO 8601 format using PKT timezone.\n\nRun tool:  \ncheck_availablity\n\nSearch for events around that time to find the specific event ID.\n\nStep 3  \nOnce you identify the event, confirm with the customer.\n\nExample:\n\nI found your appointment:\n\nDate: [date]  \nTime: [time]  \nConsultation: [type]\n\nWould you like me to cancel this appointment?\n\nWait for confirmation.\n\nStep 4  \nAfter the customer confirms, run tool:  \ndelete_event\n\nProvide the event ID from the calendar search.\n\nStep 5  \nSend a cancellation confirmation message.\n\nExample:\n\nAppointment Canceled\n\nYour appointment has been successfully canceled.\n\nDate: [date]  \nTime: [time]\n\nIf you'd like to book a new appointment, just let me know!\n\n---\n\n### 6. Escalation to Human Support\n\nIf the user:\n\n- Requests a human agent\n- Has an order complaint\n- Reports product reaction\n- Has complex issues\n\nFollow this process.\n\nStep 1  \nAsk for full name.\n\nStep 2  \nConfirm their WhatsApp number.\n\nStep 3  \nAsk them to briefly describe the issue.\n\nThen run tool:\n\ncreate_ticket\n\nInput:\n\nCustomer name  \nPhone number  \nIssue details\n\nThen reply:\n\nThank you. I've shared your request with our support team.  \nSomeone from Adeena Group will contact you shortly.\n\n---\n\n## Tools\n\ncheck_availablity\n\nPurpose  \nCheck Google Calendar availability around requested time.\n\nInput  \nISO 8601 date and time in PKT timezone.\n\n---\n\nbook_appointment\n\nPurpose  \nCreate calendar event.\n\nInput  \nConfirmed ISO 8601 date and time.\n\n---\n\nGoogle sheet\n\nPurpose  \nStore confirmed appointment data.\n\nColumns\n\nDate  \nTime  \nName  \nPhone Number  \nRequest\n\nUse this tool only after the appointment is confirmed.\n\n---\n\nGmail\n\nPurpose  \nSend email notifications.\n\nTwo uses:\n\n1. Internal notification to Adeena Group when an appointment is booked.\n2. Optional confirmation email to the customer if they provide their Gmail address.\n\n---\n\ndelete_event\n\nPurpose  \nDelete a calendar event when customer requests cancellation.\n\nInput  \nEvent ID from Google Calendar.\n\n---\n\ncreate_ticket\n\nPurpose  \nSend the issue to human support.\n\nInput\n\nCustomer name  \nPhone number  \nIssue description\n\n---\n\n## Examples\n\nExample 1\n\nUser  \nHow do I use your hair oil?\n\nAssistant  \nApply a small amount of oil to your scalp and massage gently for 5–10 minutes. Leave it for at least 1 hour or overnight before washing.\n\nUsing it 2–3 times per week gives the best results.\n\nWould you like a quick hair consultation?\n\n---\n\nExample 2\n\nUser  \nI want to book a consultation.\n\nAssistant  \nSure! Is this for hair consultation or product guidance?\n\n---\n\nExample 3\n\nUser  \nI have an issue with my order.\n\nAssistant  \nI'm sorry to hear that. May I please have your full name so I can help you?\n\n---\n\n## SOP (Standard Operating Procedure)\n\n1. Understand the user's request.\n2. If the request is clear, respond immediately.\n3. If unclear, send the introduction once.\n4. Ask only one question at a time.\n5. For appointments:\n   - Ask purpose\n   - Ask date\n   - Ask time\n   - Check availability\n   - Collect name\n   - Confirm appointment\n   - Book appointment\n   - Insert data into Google Sheet\n   - Send Gmail notification to company\n   - Ask customer if they want email confirmation\n   - If Gmail provided, send confirmation email\n6. Send a clear confirmation message to the customer.\n7. For complaints or complex issues:\n   - Collect name\n   - Confirm number\n   - Ask issue\n   - Create support ticket\n\n---\n\n## Final Notes\n\n- Always use PKT timezone for scheduling.\n- Never mention internal tools or automation.\n- Never fabricate availability.\n- Keep responses natural and human-like.\n- Use clean formatting for important messages.\n- After every confirmed booking, store the data in Google Sheet.\n- Always send a Gmail notification to the company for every booked appointment.\n- Send a confirmation email to the customer only if they provide their Gmail address.\n- Always guide the customer toward a clear next step."
+        }
+      },
+      "id": "2e8e6f5a-c271-49d9-a255-5da69f87b09c",
+      "name": "AI Agent for Voice",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        496,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $json.output }}",
+        "options": {
+          "response_format": "opus"
+        }
+      },
+      "id": "fb9b5b75-021d-4b62-ab58-1a82e20c7985",
+      "name": "Generate Voice Response",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        912,
+        624
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OVkwCZe5orPybPWp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1059160680606567",
+        "recipientPhoneNumber": "=+{{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "messageType": "audio",
+        "mediaPath": "useMedian8n",
+        "additionalFields": {}
+      },
+      "id": "54948bcc-40d9-4c82-bb10-5797135d5d00",
+      "name": "Send Voice Response",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1424,
+        624
+      ],
+      "webhookId": "4caad5ed-af5e-42f6-b85a-999dbef4b4d5",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "IGhBMms8qwYitSen",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "data",
+              "value": "={{ $binary.data }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "03ff2e57-db29-4ab3-9e0b-2f5f3ff6bbde",
+      "name": "Fix Audio MIME Type",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "mubasiranwar70@gmail.com",
+        "subject": "Plumber Booking ",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        304
+      ],
+      "id": "fad18495-2dde-4928-aded-f765e99b5a62",
+      "name": "Send a message in Gmail",
+      "webhookId": "c2d0f8a9-188a-453f-8307-5645240c75b0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "pNtodyyQIRaR4tsj",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        304
+      ],
+      "id": "a7b85427-653e-4a21-8694-29f9a3372c21",
+      "name": "customer emil",
+      "webhookId": "c8f0d6d1-1a3f-40b9-a07f-df750642d79a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "pNtodyyQIRaR4tsj",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Route by Message Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent for Voice",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "AI Agent for Voice",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_availablity": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent for Voice",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent for Voice",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent for Voice",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent for Voice",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Message Type": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Voice Message URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Voice Message URL": {
+      "main": [
+        [
+          {
+            "node": "Download Voice Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Voice Audio": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Voice to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Voice to Text": {
+      "main": [
+        [
+          {
+            "node": "Prepare Voice Input for Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Voice Input for Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent for Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent for Voice": {
+      "main": [
+        [
+          {
+            "node": "Generate Voice Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Voice Response": {
+      "main": [
+        [
+          {
+            "node": "Fix Audio MIME Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Audio MIME Type": {
+      "main": [
+        [
+          {
+            "node": "Send Voice Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent for Voice",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "customer emil": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent for Voice",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "baaae9ca-005a-4e9c-82a7-a8f695377168",
+  "meta": {
+    "instanceId": "b71045c76759a345d274a90935357985a565d181488cba3a8812261446050925"
+  },
+  "id": "5l2pDPjjtJQV4tEJ",
+  "tags": []
+}
